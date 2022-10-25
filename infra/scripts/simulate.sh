@@ -20,16 +20,17 @@ do
   for i in {1..5}
   do
     makeRestCall "POST"
+    makeRestCall "GET"
   done
-
-  # returns 400
-  makeRestCall "DELETE"
 
   # returns 200
   for i in {1..5}
   do
     makeRestCall "GET"
   done
+
+  # returns 200
+  makeRestCall "DELETE"
 
   # returns 400
   makeRestCall "PATCH"
