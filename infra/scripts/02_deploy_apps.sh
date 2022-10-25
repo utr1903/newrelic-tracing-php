@@ -100,6 +100,8 @@ docker build \
 docker run \
   -d \
   --rm \
+  --cpus "0.05" \
+  --memory "2000m" \
   --network $dockerNetwork \
   --name "${mysql[name]}" \
   -p "${mysql[port]}":"${mysql[port]}" \
@@ -125,6 +127,8 @@ docker stop "${phpdaemon[name]}"
 docker run \
   -d \
   --rm \
+  --cpus "0.01" \
+  --memory "50m" \
   --network $dockerNetwork \
   --name "${phpdaemon[name]}" \
   ${phpdaemon[imageName]}
@@ -137,6 +141,8 @@ docker stop "${proxy[name]}"
 docker run \
   -d \
   --rm \
+  --cpus "0.01" \
+  --memory "50m" \
   --network $dockerNetwork \
   --name "${proxy[name]}" \
   -p ${proxy[port]}:80 \
@@ -149,6 +155,8 @@ docker stop "${persistence[name]}"
 docker run \
   -d \
   --rm \
+  --cpus "0.01" \
+  --memory "50m" \
   --network $dockerNetwork \
   --name "${persistence[name]}" \
   -p ${persistence[port]}:80 \
