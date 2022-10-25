@@ -1,17 +1,35 @@
 #!/bin/bash
 
-# Get commandline arguments
-while (( "$#" )); do
-  case "$1" in
-    --license-key)
-      NEWRELIC_LICENSE_KEY="$2"
-      shift
-      ;;
-    *)
-      shift
-      ;;
-  esac
-done
+###############
+### Methods ###
+###############
+postDeploymentMarker() {
+
+  local appName=$1
+
+  appId=$(curl -X GET 'https://api.eu.newrelic.com/v2/applications.json' \
+  -H "Api-Key:${NEWRELIC_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  | jq -r '.applications[] | select(.name==''"'${appName}'"'') | .id')
+
+timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+curl -X POST "https://api.eu.newrelic.com/v2/applications/$appId/deployments.json" \
+  -i \
+  -H "Api-Key:${NEWRELIC_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d \
+  '{
+    "deployment": {
+      "revision": "1.0.0",
+      "changelog": "Initial deployment",
+      "description": "Deploy the app.",
+      "user": "datanerd@example.com",
+      "timestamp": "'"${timestamp}"'"
+    }
+  }'
+}
+#########
 
 ##################
 ### Apps Setup ###
@@ -89,7 +107,7 @@ docker run \
   ${mysql[imageName]}
 
 # Create database & table
-sleep 2
+sleep 5
 sudo docker exec \
   -it ${mysql[name]} \
   mysql \
@@ -108,6 +126,7 @@ docker run \
   --network $dockerNetwork \
   --name "${phpdaemon[name]}" \
   ${phpdaemon[imageName]}
+sleep 3
 
 # Proxy
 docker stop "${proxy[name]}"
@@ -118,6 +137,8 @@ docker run \
   --name "${proxy[name]}" \
   -p ${proxy[port]}:80 \
   ${proxy[imageName]}
+
+# postDeploymentMarker ${proxy[name]}
 
 # Persistence
 docker stop "${persistence[name]}"
@@ -133,4 +154,6 @@ docker run \
   -e MYSQL_DATABASE="${mysql[database]}" \
   -e MYSQL_TABLE="${mysql[table]}" \
   ${persistence[imageName]}
+
+# postDeploymentMarker ${persistence[name]}
 ######
