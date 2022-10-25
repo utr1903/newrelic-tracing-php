@@ -29,6 +29,41 @@ else {
   $logger->info("Request URI is parsed successfully.");
 }
 
+# Error generation
+$persistenceError500 = FALSE;
+$persistenceErrorWait = FALSE;
+
+if (count($parts) > 2) {
+  if ($parts[2] == "proxy-error-500") {
+    $logger->error("Persistence service is not available.");
+    http_response_code(500);
+    $responseDto = array(
+      "message" => "Unexpected error occured.",
+      "statusCode" => 500,
+      "data" => NULL,
+    );
+    echo json_encode($responseDto);
+    exit;
+  }
+  elseif ($parts[2] == "proxy-error-wait") {
+    sleep(3);
+  }
+  elseif ($parts[2] == "persistence-error-500") {
+    $persistenceError500 = TRUE;
+  }
+  elseif ($parts[2] == "persistence-error-wait") {
+    $persistenceErrorWait = TRUE;
+  }
+}
+
+$persistenceServiceEndpoint = "http://persistence-php:80/persistence";
+if ($persistenceError500 == TRUE) {
+  $persistenceServiceEndpoint = $persistenceServiceEndpoint . "/persistence-error-500";
+}
+elseif ($persistenceErrorWait == TRUE) {
+  $persistenceServiceEndpoint = $persistenceServiceEndpoint . "/persistence-error-wait";
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "GET") {
   $logger->info("GET endpoint is triggered. Executing...");
 
@@ -39,7 +74,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
       "Content-Type: application/json",
     );
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-    curl_setopt($ch, CURLOPT_URL, "http://persistence-php:80/persistence");
+    curl_setopt($ch, CURLOPT_URL, $persistenceServiceEndpoint);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     $result = curl_exec($ch);
     curl_close($ch);
@@ -71,7 +106,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
   }
   else {
     $logger->info("GET method is executed successfully.");
-    http_response_code(200);
+    http_response_code(json_decode($result, true)["statusCode"]);
     echo $result;
     exit;
   }
@@ -91,7 +126,7 @@ elseif ($_SERVER["REQUEST_METHOD"] == "POST") {
       "Content-Type: application/json",
     );
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-    curl_setopt($ch, CURLOPT_URL, "http://persistence-php:80/persistence");
+    curl_setopt($ch, CURLOPT_URL, $persistenceServiceEndpoint);
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $requestDto);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -137,7 +172,7 @@ elseif ($_SERVER["REQUEST_METHOD"] == "DELETE") {
       "Content-Type: application/json",
     );
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-    curl_setopt($ch, CURLOPT_URL, "http://persistence-php:80/persistence");
+    curl_setopt($ch, CURLOPT_URL, $persistenceServiceEndpoint);
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     $result = curl_exec($ch);

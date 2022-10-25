@@ -29,6 +29,24 @@ else {
   $logger->info("Request URI is parsed successfully.");
 }
 
+# Error generation
+if (count($parts) > 2) {
+  if ($parts[2] == "persistence-error-500") {
+    $logger->error("DB connection could not be established.");
+    http_response_code(500);
+    $responseDto = array(
+      "message" => "Unexpected error occured.",
+      "statusCode" => 500,
+      "data" => NULL,
+    );
+    echo json_encode($responseDto);
+    exit;
+  }
+  elseif ($parts[2] == "persistence-error-wait") {
+    sleep(3);
+  }
+}
+
 $mysqlServer = getenv('MYSQL_SERVER');
 $mysqlUserName = getenv('MYSQL_USERNAME');
 $mysqlPassword = getenv('MYSQL_PASSWORD');
