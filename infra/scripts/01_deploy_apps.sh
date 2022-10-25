@@ -106,8 +106,10 @@ docker run \
   -e MYSQL_ROOT_PASSWORD="${mysql[password]}" \
   ${mysql[imageName]}
 
+# Wait until mysql is up
+sleep 10
+
 # Create database & table
-sleep 5
 sudo docker exec \
   -it ${mysql[name]} \
   mysql \
@@ -126,7 +128,9 @@ docker run \
   --network $dockerNetwork \
   --name "${phpdaemon[name]}" \
   ${phpdaemon[imageName]}
-sleep 3
+
+# Wait until daemon is up
+sleep 5
 
 # Proxy
 docker stop "${proxy[name]}"
