@@ -33,6 +33,8 @@ else {
 if (count($parts) > 2) {
   if ($parts[2] == "persistence-error-500") {
     $logger->error("DB connection could not be established.");
+    newrelic_notice_error("DB connection could not be established.");
+
     http_response_code(500);
     $responseDto = array(
       "message" => "Unexpected error occured.",
@@ -60,6 +62,7 @@ try {
 }
 catch (Exception $e) {
   $logger->error("Connecting to database is failed." . $e->getMessage());
+  newrelic_notice_error("DB connection could not be established.", $e);
 
   http_response_code(500);
     $responseDto = array(
@@ -130,6 +133,9 @@ elseif ($_SERVER["REQUEST_METHOD"] == "POST") {
     echo json_encode($responseDto);
   }
   else {
+    $logger->error("Creating new value is failed." . $conn->error);
+    newrelic_notice_error("Creating new value is failed." . $conn->error);
+
     http_response_code(500);
     $responseDto = array(
       "message" => "Creating new value is failed." . $conn->error,
@@ -159,6 +165,9 @@ elseif ($_SERVER["REQUEST_METHOD"] == "DELETE") {
     echo json_encode($responseDto);
   }
   else {
+    $logger->error("Deleting value is failed." . $conn->error);
+    newrelic_notice_error("Deleting value is failed." . $conn->error);
+
     http_response_code(500);
     $responseDto = array(
       "message" => "Deleting values is failed." . $conn->error,
@@ -173,6 +182,7 @@ elseif ($_SERVER["REQUEST_METHOD"] == "DELETE") {
 }
 else {
   $logger->warning("Only GET, POST and DELETE methods are allowed.");
+  newrelic_notice_error("Only GET, POST and DELETE methods are allowed.");
 
   http_response_code(400);
   $responseDto = array(

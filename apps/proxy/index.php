@@ -36,6 +36,8 @@ $persistenceErrorWait = FALSE;
 if (count($parts) > 2) {
   if ($parts[2] == "proxy-error-500") {
     $logger->error("Persistence service is not available.");
+    newrelic_notice_error("Persistence service is not available.");
+
     http_response_code(500);
     $responseDto = array(
       "message" => "Unexpected error occured.",
@@ -82,7 +84,9 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
     $logger->info("Request to persistence service is succeeded.");
   }
   catch (Exception $e) {
-    $logger->error("Request to persistence service is failed.");
+    $logger->error("Request to persistence service is failed." . $e->getMessage());
+    newrelic_notice_error("Request to persistence service is failed.", $e);
+
     http_response_code(500);
     $responseDto = array(
       "message" => "Request to persistence service failed. " . $e->getMessage(),
@@ -95,6 +99,8 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
 
   if ($result === FALSE) {
     $logger->error("Request to persistence service is failed.");
+    newrelic_notice_error("Request to persistence service is failed.");
+
     http_response_code(500);
     $responseDto = array(
       "message" => "Request to persistence service failed.",
@@ -137,6 +143,8 @@ elseif ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($result === FALSE) {
       $logger->error("Request to persistence service is failed.");
+      newrelic_notice_error("Request to persistence service is failed.");
+
       http_response_code(500);
       $responseDto = array(
         "message" => "Request to persistence service failed.",
@@ -152,6 +160,9 @@ elseif ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
   }
   catch (Exception $e) {
+    $logger->error("Request to persistence service is failed." . $e->getMessage());
+    newrelic_notice_error("Request to persistence service is failed.", $e);
+
     http_response_code(500);
     $responseDto = array(
       "message" => "Request to persistence service failed. " . $e->getMessage(),
@@ -194,6 +205,8 @@ elseif ($_SERVER["REQUEST_METHOD"] == "DELETE") {
 
   if ($result === FALSE) {
     $logger->error("Request to persistence service is failed.");
+    newrelic_notice_error("Request to persistence service is failed.");
+
     http_response_code(500);
     $responseDto = array(
       "message" => "Request to persistence service failed.",
@@ -212,6 +225,7 @@ elseif ($_SERVER["REQUEST_METHOD"] == "DELETE") {
 }
 else {
   $logger->warning("Only GET, POST and DELETE methods are allowed.");
+  newrelic_notice_error("Only GET, POST and DELETE methods are allowed.");
 
   http_response_code(400);
   $responseDto = array(
