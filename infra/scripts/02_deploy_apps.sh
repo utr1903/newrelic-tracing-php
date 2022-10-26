@@ -67,6 +67,11 @@ declare -A persistence
 persistence["name"]="persistence-php"
 persistence["imageName"]="persistence-php"
 persistence["port"]=8081
+
+# Simulator
+declare -A simulator
+simulator["name"]="simulator-php"
+simulator["imageName"]="simulator-php"
 ######
 
 ### Docker setup ###
@@ -92,6 +97,12 @@ docker build \
   --build-arg newRelicDaemonAddress="${phpdaemon[name]}:${phpdaemon[port]}" \
   --tag ${persistence[imageName]} \
   "../../apps/persistence/."
+
+# Simulator
+docker build \
+  --build-arg newRelicAppName=${simulator[name]} \
+  --tag ${simulator[imageName]} \
+  "../../apps/simulator/."
 ######
 
 ### Run ###
@@ -168,4 +179,15 @@ docker run \
   ${persistence[imageName]}
 
 # postDeploymentMarker ${persistence[name]}
+
+# Simulator
+docker stop "${simulator[name]}"
+docker run \
+  -d \
+  --rm \
+  --cpus "0.01" \
+  --memory "50m" \
+  --network $dockerNetwork \
+  --name "${simulator[name]}" \
+  ${simulator[imageName]}
 ######
