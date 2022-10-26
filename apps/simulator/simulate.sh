@@ -6,7 +6,7 @@ makeRestCall() {
 
   echo -e "---\n"
 
-  curl -X $method "http://localhost:8080/proxy" \
+  curl -X $method "http://proxy-php:80/proxy" \
     -i \
     -H "Content-Type: application/json"
 
