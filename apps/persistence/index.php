@@ -182,7 +182,6 @@ elseif ($_SERVER["REQUEST_METHOD"] == "DELETE") {
 }
 else {
   $logger->warning("Only GET, POST and DELETE methods are allowed.");
-  newrelic_notice_error("Only GET, POST and DELETE methods are allowed.");
 
   http_response_code(400);
   $responseDto = array(
